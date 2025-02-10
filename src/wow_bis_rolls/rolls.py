@@ -38,6 +38,9 @@ def get_winning_roll(item_awarded, winner):
     except StopIteration:
         msg = "Failed to find a winner for {}".format(item_awarded["itemLink"])
         raise ValueError(msg) from None
+    except KeyError:
+        msg = "Failed to find rolls for {}".format(item_awarded["itemLink"])
+        raise KeyError(msg) from None
 
 
 def roll_was_bis(roll):
