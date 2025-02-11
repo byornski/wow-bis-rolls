@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import json
 
 
@@ -59,17 +60,56 @@ def parse_file_for_bis_rolls(filename):
         # Check if this was a disenchant roll -- if so, skip
         if item_was_disenchanted(item_awarded):
             continue
+        
+        # Check if the winning roll type exists and is bis
+        roll_type = item_awarded.get("winningRollType", "None")
 
-        # Find the winning roll
-        winning_roll = get_winning_roll(item_awarded, winner)
+        try:
+            if item_awarded["winningRollType"].lower() != "bis":
+                continue
 
-        # Check if this was not a bis roll -- if so, skip
-        if not roll_was_bis(winning_roll):
-            continue
+        except KeyError:
+            # Fallback check - Find the winning roll
+            winning_roll = get_winning_roll(item_awarded, winner)
 
+            # Check if this was not a bis roll -- if so, skip
+            if not roll_was_bis(winning_roll):
+                continue
+
+        # This was a bis roll so print!
         print("{} won BiS on {}".format(winner, item_awarded["itemLink"]))
+
+def parse_for_enchanting(filename):
+
+    winners = defaultdict(list)
+
+    data = read_json(filename)
+
+    for item_awarded in data:
+
+        # Get the winner name without the server suffix
+        winner = get_winner(item_awarded)
+
+        if 'Accurascope' in item_awarded['itemLink']:
+            winners[winner].append(item_awarded['itemLink'],)
+
+        # # Check if this was a disenchant roll -- if so, skip
+        # if item_was_disenchanted(item_awarded):
+        #     continue
+
+        # # Find the winning roll
+        # winning_roll = get_winning_roll(item_awarded, winner)
+
+        # # Check if this was not a bis roll -- if so, skip
+        # if not roll_was_bis(winning_roll):
+        #     continue
+
+        # print("{} won BiS on {}".format(winner, item_awarded["itemLink"]))
+    for w in winners:
+        print(w, ":", winners[w])
 
 
 def main():
     filename = parse_args().filename
     parse_file_for_bis_rolls(filename)
+    #parse_for_enchanting(filename)
